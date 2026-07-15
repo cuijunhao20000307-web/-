@@ -22,8 +22,6 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          echo "DEVKITPRO=$DEVKITPRO"
-          echo "DEVKITA64=$DEVKITA64"
           test -x "$DEVKITA64/bin/aarch64-none-elf-g++"
           "$DEVKITA64/bin/aarch64-none-elf-g++" --version
           test -f "$DEVKITPRO/libnx/switch_rules"
@@ -33,7 +31,7 @@ jobs:
         run: |
           set -euxo pipefail
           apt-get update
-          apt-get install -y --no-install-recommends curl unzip ca-certificates python3
+          apt-get install -y --no-install-recommends curl unzip ca-certificates python3 zip
 
       - name: Fetch libultrahand
         shell: bash
@@ -43,18 +41,20 @@ jobs:
           rm -rf lib/libultrahand
           git clone --depth 1 https://github.com/ppkantorski/libultrahand.git lib/libultrahand
 
-      - name: Build overlay
+      - name: Build Hyrule overlay
         shell: bash
         run: |
           set -euxo pipefail
           export PATH="$DEVKITA64/bin:$DEVKITPRO/tools/bin:$PATH"
+          make clean
           make -j2
-          test -f HyruleBridgeUltra.ovl
+          test -s HyruleBridgeUltra.ovl
 
       - name: Download Tesla Menu and nx-ovlloader
         shell: bash
         run: |
           set -euxo pipefail
+          rm -rf downloads package
           mkdir -p downloads package
 
           download_latest_zip() {
@@ -62,7 +62,7 @@ jobs:
             output="$2"
             api="https://api.github.com/repos/${repo}/releases/latest"
             curl -fsSL -H "Accept: application/vnd.github+json" "$api" -o release.json
-            url=$(python3 -c 'import json,sys; d=json.load(open("release.json")); assets=d.get("assets",[]); z=[a["browser_download_url"] for a in assets if a.get("name","").lower().endswith(".zip")]; print(z[0] if z else "")')
+            url=$(python3 -c 'import json; d=json.load(open("release.json")); a=[x["browser_download_url"] for x in d.get("assets",[]) if x.get("name","").lower().endswith(".zip")]; print(a[0] if a else "")')
             test -n "$url"
             curl -fL "$url" -o "$output"
           }
@@ -73,7 +73,7 @@ jobs:
           download_latest_zip "WerWolv/nx-ovlloader" "downloads/nx-ovlloader.zip"
           unzip -o downloads/nx-ovlloader.zip -d package
 
-          test -f package/switch/.overlays/ovlmenu.ovl
+          test -s package/switch/.overlays/ovlmenu.ovl
           test -d package/atmosphere/contents/420000000007E51A
 
       - name: Prepare complete install package
@@ -82,25 +82,42 @@ jobs:
           set -euxo pipefail
           mkdir -p package/switch/.overlays
           cp HyruleBridgeUltra.ovl package/switch/.overlays/HyruleBridgeUltra.ovl
+
           mkdir -p package/config/hyrule-bridge
           cp config/bridge.ini package/config/hyrule-bridge/bridge.ini
+
           cat > package/安装说明.txt <<'EOF'
           海拉鲁导航完整安装包
 
-          1. 将本压缩包内全部文件复制到 Switch SD 卡根目录并选择合并/覆盖。
-          2. 重启 Switch 或重启 Atmosphere。
+          1. 将压缩包里的 atmosphere、switch、config 复制到 Switch SD 卡根目录。
+          2. 选择合并和覆盖，然后完全重启 Switch。
           3. 默认呼出组合键：L + 十字键下 + 右摇杆按下。
-          4. 在 Tesla Menu 中选择“海拉鲁导航”。
-          5. 手机与 Switch 连接同一 Wi-Fi，在手机浏览器打开插件显示的网址。
+          4. 在 Tesla Menu 中打开 Hyrule Bridge Ultra。
+          5. 手机与 Switch 连接同一 Wi-Fi，再打开插件显示的地址。
 
-          本包包含：
-          - HyruleBridgeUltra.ovl（海拉鲁导航）
-          - ovlmenu.ovl（Tesla Menu）
-          - nx-ovlloader（Tesla 后台加载器）
+          必须包含：
+          switch/.overlays/HyruleBridgeUltra.ovl
+          switch/.overlays/ovlmenu.ovl
+          atmosphere/contents/420000000007E51A/
           EOF
 
-      - uses: actions/upload-artifact@v4
+          test -s package/switch/.overlays/HyruleBridgeUltra.ovl
+          test -s package/switch/.overlays/ovlmenu.ovl
+          test -d package/atmosphere/contents/420000000007E51A
+
+          echo "===== PACKAGE CONTENTS ====="
+          find package -maxdepth 6 -print | sort
+
+          cd package
+          zip -r ../HyruleBridgeUltra-0.3.1-Full-Tesla-Pack.zip .
+          cd ..
+          unzip -l HyruleBridgeUltra-0.3.1-Full-Tesla-Pack.zip | grep 'switch/.overlays/HyruleBridgeUltra.ovl'
+          unzip -l HyruleBridgeUltra-0.3.1-Full-Tesla-Pack.zip | grep 'switch/.overlays/ovlmenu.ovl'
+
+      - name: Upload complete installation ZIP
+        uses: actions/upload-artifact@v4
         with:
-          name: HyruleBridgeUltra-0.3.0-Full-Tesla-Pack
-          path: package/
+          name: HyruleBridgeUltra-0.3.1-Full-Tesla-Pack
+          path: HyruleBridgeUltra-0.3.1-Full-Tesla-Pack.zip
           if-no-files-found: error
+          include-hidden-files: true
