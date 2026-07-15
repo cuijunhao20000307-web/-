@@ -13,10 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Switch dependencies
+      - name: Verify toolchain
         run: |
-          dkp-pacman -Syu --noconfirm
-          dkp-pacman -S --needed --noconfirm switch-curl switch-zlib switch-mbedtls
+          echo "DEVKITPRO=$DEVKITPRO"
+          aarch64-none-elf-g++ --version
+          test -f "$DEVKITPRO/libnx/switch_rules"
 
       - name: Fetch libultrahand
         run: |
