@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#07111f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="海拉鲁导航" />
+  <link rel="manifest" href="./manifest.json" />
+  <title>海拉鲁导航 · Hyrule Guide</title>
+  <style>
+    :root{--bg:#06101d;--panel:rgba(9,25,42,.82);--line:rgba(106,226,255,.22);--cyan:#72e7ff;--gold:#f5d77a;--text:#f5fbff;--muted:#94a9b8;--good:#75e0a1;--bad:#ff8a8a}
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;background:radial-gradient(circle at 50% -10%,#163b58 0,#081827 34%,#040b13 72%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(114,231,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(114,231,255,.035) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,black,transparent 80%)}
+    .app{width:min(100%,520px);margin:auto;min-height:100vh;padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 32px)}
+    header{text-align:center;padding:22px 0 16px}.eye{font-size:11px;letter-spacing:.35em;color:var(--cyan);opacity:.9}.title{margin:8px 0 0;font-size:30px;letter-spacing:.08em;font-weight:800;text-shadow:0 0 20px rgba(114,231,255,.28)}.sub{margin-top:5px;color:var(--muted);font-size:13px}
+    .card{position:relative;background:linear-gradient(145deg,rgba(13,35,57,.92),rgba(5,18,31,.94));border:1px solid var(--line);border-radius:22px;padding:18px;margin:14px 0;box-shadow:0 18px 45px rgba(0,0,0,.28),inset 0 1px rgba(255,255,255,.04);overflow:hidden}.card:after{content:"";position:absolute;right:-55px;top:-55px;width:130px;height:130px;border:1px solid rgba(114,231,255,.12);border-radius:50%;box-shadow:0 0 0 18px rgba(114,231,255,.025),0 0 0 36px rgba(114,231,255,.018)}
+    .label{font-size:12px;color:var(--muted);margin-bottom:9px}.row{display:flex;gap:10px}.input{flex:1;min-width:0;border:1px solid rgba(114,231,255,.2);background:rgba(2,11,19,.72);color:white;border-radius:14px;padding:14px;font-size:16px;outline:none}.input:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(114,231,255,.09)}
+    button{border:0;border-radius:14px;padding:0 17px;font-weight:750;font-size:14px;color:#06101d;background:linear-gradient(135deg,var(--cyan),#8fbfff);box-shadow:0 7px 22px rgba(73,192,255,.22)}button:active{transform:scale(.98)}
+    .status{display:flex;align-items:center;justify-content:space-between;gap:12px}.statusLeft{display:flex;align-items:center;gap:12px}.dot{width:11px;height:11px;border-radius:50%;background:#63707a;box-shadow:0 0 0 5px rgba(255,255,255,.04)}.dot.ok{background:var(--good);box-shadow:0 0 16px var(--good)}.dot.bad{background:var(--bad);box-shadow:0 0 16px var(--bad)}.statusTitle{font-weight:750}.statusDesc{color:var(--muted);font-size:12px;margin-top:3px}.pill{font-size:11px;color:var(--gold);border:1px solid rgba(245,215,122,.25);padding:6px 9px;border-radius:999px;background:rgba(245,215,122,.06)}
+    .sectionTitle{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}.sectionTitle b{font-size:16px}.sectionTitle span{font-size:11px;color:var(--muted)}
+    .coords{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.coord{padding:13px 8px;border-radius:15px;background:rgba(3,13,23,.65);border:1px solid rgba(255,255,255,.055);text-align:center}.coord small{display:block;color:var(--cyan);font-size:10px;letter-spacing:.16em;margin-bottom:7px}.coord strong{font-size:17px;font-variant-numeric:tabular-nums}
+    .notice{margin-top:13px;padding:11px 12px;border-radius:13px;background:rgba(245,215,122,.06);border:1px solid rgba(245,215,122,.16);color:#dccd9c;font-size:12px;line-height:1.55}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.action{padding:16px 12px;border:1px solid rgba(114,231,255,.13);border-radius:16px;background:rgba(4,15,26,.55)}.action b{display:block;font-size:14px}.action span{display:block;color:var(--muted);font-size:11px;margin-top:5px}.foot{text-align:center;color:#607686;font-size:11px;padding:18px 0 4px}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header><div class="eye">HYRULE BRIDGE</div><h1 class="title">海拉鲁导航</h1><div class="sub">手机局域网导游 · Switch 实时桥接</div></header>
+
+    <section class="card">
+      <div class="label">SWITCH 局域网 IP</div>
+      <div class="row"><input id="ip" class="input" inputmode="decimal" autocomplete="off" placeholder="例如 192.168.0.12" /><button id="connect">连接</button></div>
+    </section>
+
+    <section class="card">
+      <div class="status"><div class="statusLeft"><i id="dot" class="dot"></i><div><div id="statusTitle" class="statusTitle">尚未连接</div><div id="statusDesc" class="statusDesc">请查看 Switch Overlay 中显示的 IP</div></div></div><span id="version" class="pill">OFFLINE</span></div>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle"><b>当前位置</b><span id="updated">等待数据</span></div>
+      <div class="coords"><div class="coord"><small>X</small><strong id="x">—</strong></div><div class="coord"><small>Y</small><strong id="y">—</strong></div><div class="coord"><small>Z</small><strong id="z">—</strong></div></div>
+      <div id="notice" class="notice">当前 Switch 端尚未完成《王国之泪》坐标地址标定，因此网页可检测桥接服务，但暂时不会显示实时坐标。</div>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle"><b>导游功能</b><span>WEB 0.1</span></div>
+      <div class="actions"><div class="action"><b>📍 实时位置</b><span>读取 Switch 当前坐标</span></div><div class="action"><b>🧭 路线指引</b><span>下一阶段加入导航目标</span></div><div class="action"><b>⭐ 地点收藏</b><span>保存神庙与素材点</span></div><div class="action"><b>📱 主屏幕模式</b><span>Safari 可添加到主屏幕</span></div></div>
+    </section>
+
+    <div class="foot">LINKO · HYRULE GUIDE PROJECT</div>
+  </main>
+<script>
+const $=s=>document.querySelector(s);let timer=null;
+const saved=localStorage.getItem('hyrule_switch_ip')||'';$('#ip').value=saved;
+function base(){const ip=$('#ip').value.trim().replace(/^https?:\/\//,'').replace(/\/$/,'');return `http://${ip}:37890`}
+function state(type,title,desc,badge){$('#dot').className='dot '+type;$('#statusTitle').textContent=title;$('#statusDesc').textContent=desc;$('#version').textContent=badge}
+async function read(){
+  const ip=$('#ip').value.trim();if(!ip)return state('bad','请输入 Switch IP','手机与 Switch 必须连接同一个 Wi‑Fi','NO IP');
+  localStorage.setItem('hyrule_switch_ip',ip);state('','正在连接','正在访问 Hyrule Bridge…','CHECK');
+  try{
+    const status=await fetch(base()+'/v1/status',{cache:'no-store'}).then(r=>{if(!r.ok)throw Error(r.status);return r.json()});
+    state('ok','桥接服务已连接',`${status.ip||ip}:${status.port||37890}`,'v'+(status.version||'?'));
+    try{
+      const p=await fetch(base()+'/v1/position',{cache:'no-store'}).then(r=>r.json());
+      const ready=p.ready&&p.x!=null;$('#x').textContent=ready?Number(p.x).toFixed(1):'—';$('#y').textContent=ready?Number(p.y).toFixed(1):'—';$('#z').textContent=ready?Number(p.z).toFixed(1):'—';
+      $('#updated').textContent=ready?new Date().toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}):'等待坐标标定';
+      $('#notice').textContent=ready?'坐标已同步。后续可在这里加入目标距离与方向箭头。':'Switch 端已连接，但游戏坐标地址尚未标定。桥接服务本身运行正常。';
+    }catch(e){}
+  }catch(e){state('bad','无法连接 Switch','检查 IP、Wi‑Fi 与 Overlay 是否正在运行','OFFLINE');$('#updated').textContent='连接失败'}
+}
+$('#connect').onclick=()=>{read();clearInterval(timer);timer=setInterval(read,2500)};$('#ip').addEventListener('keydown',e=>{if(e.key==='Enter')$('#connect').click()});
+if(saved)setTimeout(()=>$('#connect').click(),350);
+</script>
+</body>
+</html>
