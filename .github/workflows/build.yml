@@ -8,27 +8,45 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: devkitpro/devkita64:latest
+    container:
+      image: devkitpro/devkita64:latest
+      env:
+        DEVKITPRO: /opt/devkitpro
+        DEVKITA64: /opt/devkitpro/devkitA64
+        PATH: /opt/devkitpro/devkitA64/bin:/opt/devkitpro/tools/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
     steps:
       - uses: actions/checkout@v4
 
       - name: Verify toolchain
+        shell: bash
         run: |
+          set -euxo pipefail
           echo "DEVKITPRO=$DEVKITPRO"
-          aarch64-none-elf-g++ --version
+          echo "DEVKITA64=$DEVKITA64"
+          test -x "$DEVKITA64/bin/aarch64-none-elf-g++"
+          "$DEVKITA64/bin/aarch64-none-elf-g++" --version
           test -f "$DEVKITPRO/libnx/switch_rules"
 
       - name: Fetch libultrahand
+        shell: bash
         run: |
+          set -euxo pipefail
           mkdir -p lib
+          rm -rf lib/libultrahand
           git clone --depth 1 https://github.com/ppkantorski/libultrahand.git lib/libultrahand
 
       - name: Build overlay
-        run: make -j2
+        shell: bash
+        run: |
+          set -euxo pipefail
+          export PATH="$DEVKITA64/bin:$DEVKITPRO/tools/bin:$PATH"
+          make -j2
 
       - name: Prepare package
+        shell: bash
         run: |
+          set -euxo pipefail
           mkdir -p package/switch/.overlays
           cp HyruleBridgeUltra.ovl package/switch/.overlays/HyruleBridgeUltra.ovl
           mkdir -p package/config/hyrule-bridge
@@ -36,5 +54,6 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: HyruleBridgeUltra-0.2.2
+          name: HyruleBridgeUltra-0.3.0
           path: package/
+          if-no-files-found: error
