@@ -1,0 +1,27 @@
+name: Build Hyrule Bridge Ultra
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkita64:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          dkp-pacman -Syu --noconfirm
+          dkp-pacman -S --needed --noconfirm switch-curl switch-zlib switch-mbedtls switch-minizip zip git
+      - name: Fetch libultrahand
+        run: git clone --depth 1 https://github.com/ppkantorski/libultrahand.git lib/libultrahand
+      - name: Build
+        run: make -j2 dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HyruleBridgeUltra-0.2.2
+          path: |
+            HyruleBridgeUltra.ovl
+            HyruleBridgeUltra.zip
