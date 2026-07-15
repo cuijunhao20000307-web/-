@@ -1,0 +1,12 @@
+{
+  "name": "海拉鲁导航 · Hyrule Guide",
+  "short_name": "海拉鲁导航",
+  "description": "连接 Nintendo Switch Hyrule Bridge 的手机局域网导游网页",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#06101d",
+  "theme_color": "#07111f",
+  "lang": "zh-CN",
+  "orientation": "portrait-primary"
+}
